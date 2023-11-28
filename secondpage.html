@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+				* {
+			padding: 0;
+			margin: 0;
+			box-sizing: border-box;
+		}
+		body {
+			font-family: 'Montserrat', sans-serif;
+			text-align: center;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			margin: 0;
+			background-image: url(https://images.pexels.com/photos/1303082/pexels-photo-1303082.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1);
+			background-size: cover;
+		}
+
+		#game-container {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			width: 80%;
+			margin: 0 auto;
+		}
+
+		#game-board {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			height: 90vh;
+			width: 80vh;
+			align-content: space-around;
+			background-color: #dddbdbb3 ;
+			justify-content: center;
+			align-items: center;
+			border-radius: 10px;
+		}
+
+		.card {
+			width: 150px;
+			height: 100px;
+			display: inline-block;
+			overflow: hidden;
+			perspective: 1000px;
+			position: relative;
+			transform-style: preserve-3d;
+			transition: transform 0.5s;
+			transform-origin: center right;
+			margin-left: 18px;
+		}
+
+		.card .front,
+		.card .back {
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			top: 0;
+			left: 0;
+			backface-visibility: hidden;
+			transform-origin: center;
+		}
+
+		.card .back {
+			transform: rotateY(180deg);
+		}
+
+		.card.flipped {
+			transform: translateX(-100%) rotateY(-180deg);
+		}
+
+		#score-container {
+			max-width: 400px;
+			width: 100%;
+			background-color: #f8f8f8;
+			padding: 20px;
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		#score-form,
+		#end-game-form {
+			margin-top: 20px;
+			width: 100%;
+		}
+
+		#score-form button,
+		#end-game-form button {
+			width: 100%;
+			height: 30px;
+			margin-top: 30px;
+			background-color: #45a049;
+			color:#f8f8f8;
+			border: #45a049;
+			border-radius: 5px;
+		}
+
+
+	</style>
+
+	<title>Memory Game</title>
+</head>
+
+<body>
+
+	<div id="game-container">
+		<div id="game-board"></div>
+
+		<div id="score-container">
+			<form id="score-form">
+				<label for="player1-score">Poäng för <span id="player1Name"></span>:</label>
+				<input type="text" id="player1-score" name="player1-score" readonly>
+				<div style="margin-bottom: 20px;"></div>
+				<label for="player2-score">Poäng för <span id="player2Name"></span>:</label>
+				<input type="text" id="player2-score" name="player2-score" readonly>
+
+
+				<button type="button" onclick="endGame()">Avsluta matchen</button>
+			</form>
+		</div>
+	</div>
+
+	<script>
+
+
+
+		const gameBoard = document.getElementById('game-board');
+		const images = [
+			'https://images.unsplash.com/photo-1480632563560-30f503c09195?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Länk till bild 1
+			'https://images.unsplash.com/photo-1480930700499-dc44aa7cb2cf?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8JUMyJUI0Y2hyaXN0bWFzfGVufDB8fDB8fHww', // Länk till bild 2
+			'https://images.unsplash.com/photo-1483373018724-770a096812ff?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fCVDMiVCNGNocmlzdG1hc3xlbnwwfHwwfHx8MA%3D%3D', // Länk till bild 3
+			'https://images.unsplash.com/photo-1544277879-42659615e478?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mzl8fCVDMiVCNGNocmlzdG1hc3xlbnwwfHwwfHx8MA%3D%3D', // Länk till bild 4
+			'https://plus.unsplash.com/premium_photo-1661767302582-dcd0c98adb0d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDF8fCVDMiVCNGNocmlzdG1hc3xlbnwwfHwwfHx8MA%3D%3D', // Länk till bild 5
+			'https://images.unsplash.com/photo-1512648151223-1e18b9fca794?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTB8fCVDMiVCNGNocmlzdG1hc3xlbnwwfHwwfHx8MA%3D%3D', // Länk till bild 6
+			'https://plus.unsplash.com/premium_photo-1683121372345-cce0d85768a3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTQxfHwlQzIlQjRjaHJpc3RtYXN8ZW58MHx8MHx8fDA%3D', // Länk till bild 7
+			'https://plus.unsplash.com/premium_photo-1661761588863-3457b23faf2f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NzN8fCVDMiVCNGNocmlzdG1hc3xlbnwwfHwwfHx8MA%3D%3D', // Länk till bild 8
+			'https://images.unsplash.com/photo-1511782976458-3c4b939c97f3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NzZ8fCVDMiVCNGNocmlzdG1hc3xlbnwwfHwwfHx8MA%3D%3D', // Länk till bild 9
+			'https://plus.unsplash.com/premium_photo-1661765277374-d48b4d8b152d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Njl8fCVDMiVCNGNocmlzdG1hc3xlbnwwfHwwfHx8MA%3D%3D', // Länk till bild 10
+			'https://images.unsplash.com/photo-1524753223054-4192b37b3a54?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Njh8fCVDMiVCNGNocmlzdG1hc3xlbnwwfHwwfHx8MA%3D%3D', // Länk till bild 11
+			'https://images.unsplash.com/photo-1603793303277-ed67787545e5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTI3fHwlQzIlQjRjaHJpc3RtYXN8ZW58MHx8MHx8fDA%3D', // Länk till bild 12
+
+		];
+
+		let selectedCards = [];
+
+		// Funktion för att blanda bilder slumpmässigt
+		function shuffleImages(images) {
+			for (let i = images.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[images[i], images[j]] = [images[j], images[i]];
+			}
+			return images;
+		}
+
+		// Uppdaterad initializeGame-funktion, används för att börja spelet genom att skapa och placera spelkort på spelbrädet
+
+		function initializeGame() {
+			const shuffledImages = shuffleImages(images.concat(images));
+
+			for (let i = 0; i < shuffledImages.length; i++) {
+				const cardElement = createCardElement(i, shuffledImages[i]);
+				gameBoard.appendChild(cardElement);
+			}
+
+		}
+
+		// Skapar en ny array som innehåller två kopior av varje bild, och sedan blandas den arrayen.
+		function shuffleArray(array) {
+			for (let i = array.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[array[i], array[j]] = [array[j], array[i]];
+			}
+			return array;
+		}
+
+		//  Skapar ett HTML-div-element som representerar spelkortet.
+		function createCardElement(index, imageUrl) {
+			const cardElement = document.createElement('div');
+			cardElement.classList.add('card');
+
+			const frontImage = createImageElement('https://images.pexels.com/photos/1556679/pexels-photo-1556679.jpeg?auto=compress&cs=tinysrgb&w=1600', `Back Image ${index + 1}`, 'front');
+			const backImage = createImageElement(imageUrl, `Front Image ${index + 1}`, 'back');
+
+			cardElement.appendChild(frontImage);
+			cardElement.appendChild(backImage);
+
+			cardElement.addEventListener('click', handleCardClick);
+
+			return cardElement;
+		}
+
+		//Skapar ett HTML-img-element som representerar en bild.
+		function createImageElement(src, alt, className) {
+			const imageElement = document.createElement('img');
+			imageElement.src = src;
+			imageElement.alt = alt;
+			imageElement.classList.add(className);
+			return imageElement;
+		}
+
+
+
+	// Klickhändelsesfunktion för varje kort
+		function handleCardClick(event) {
+			const clickedCard = event.currentTarget;
+
+			if (clickedCard.classList.contains('flipped') || selectedCards.length === 2) return;
+
+			clickedCard.classList.add('flipped');
+
+	// Uppdaterad del för att vända på kortet och ändra bildens källa
+		// Uppdaterad del för att vända på kortet och ändra bildens källa
+		const [frontImage, backImage] = clickedCard.querySelectorAll('img');
+		frontImage.style.transform = 'rotateY(180deg)';
+		backImage.style.transform = 'rotateY(0deg)';
+
+		selectedCards.push(clickedCard);
+
+		if (selectedCards.length === 2) {
+			setTimeout(() => {
+				// Återvänd till baksidan efter en viss tidsfördröjning
+				frontImage.style.transform = 'rotateY(0deg)';
+				backImage.style.transform = 'rotateY(180deg)';
+				checkForMatch();
+			}, 1000);
+		}
+	}
+
+
+		// Funktion för att kontrollera om korten matchar
+		function checkForMatch() {
+			const [card1, card2] = selectedCards;
+			const img1 = card1.querySelector('.back').src;
+			const img2 = card2.querySelector('.back').src;
+
+			if (img1 === img2) {
+				// Om bilderna matchar
+				console.log('Match!');
+
+				// Här kan du lägga till din logik för att öka spelarens poäng eller liknande
+			} else {
+				// Om bilderna inte matchar
+				setTimeout(() => {
+					card1.classList.remove('flipped');
+					card2.classList.remove('flipped');
+				}, 500); // Vänta en stund innan korten vänds tillbaka
+
+				console.log('No match!');
+			}
+
+			selectedCards = []; // Återställ valda kort
+		}
+
+
+
+	initializeGame();
+
+
+		// Funktion för att hämta parametrar från URL:en
+		function getURLParameter(name) {
+			const urlParams = new URLSearchParams(window.location.search);
+			return urlParams.get(name);
+		}
+
+		// Funktion för att hämta spelarnas namn från URL:en och uppdatera elementen på sidan
+		function updatePlayerNames() {
+			const player1NameElement = document.getElementById('player1Name');
+			const player2NameElement = document.getElementById('player2Name');
+
+			const player1Name = getURLParameter('player1') || 'Spelare 1';
+			const player2Name = getURLParameter('player2') || 'Spelare 2';
+
+			player1NameElement.textContent = player1Name;
+			player2NameElement.textContent = player2Name;
+		}
+
+		// Anropa funktionen för att uppdatera spelarnas namn när sidan laddas
+		updatePlayerNames();
+
+
+		// Funktion för att återställa poängen
+		function resetScores() {
+			document.getElementById('player1-score').value = '';
+			document.getElementById('player2-score').value = '';
+		}
+
+		// Funktion för att avsluta spelet
+		function endGame() {
+			// Implementera logik för att avsluta spelet här
+		}
+
+</script>
+</body>
+
+</html>

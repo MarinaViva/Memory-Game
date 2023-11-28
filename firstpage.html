@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			height: 100vh;
+			margin: 0;
+			padding: 0;
+			background-image: url(https://images.pexels.com/photos/1708601/pexels-photo-1708601.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1);
+			background-size: cover;
+		}
+
+
+		h1 {
+			text-align: center;
+			color:#3e9341;
+			background-color: #f8f8f8;
+			padding: 20px;
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			margin-bottom: 20px;
+			width: 100%; /* Gör h1 full bredd av föräldern */
+		}
+
+		.form-container {
+			text-align: center;
+			margin-top: 100px;
+			border: 2px solid #ddd;
+			padding: 40px;
+			border-radius: 10px;
+			background-color: #fff;
+			/* Bakgrundsfärg för formuläret */
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			/* Skugga för en 3D-effekt */
+			max-width: 400px;
+			/* Max bredd för formulärboxen */
+			width: 100%;
+		}
+
+
+
+		label {
+			display: block;
+			margin-bottom: 5px;
+		}
+
+		input {
+			width: 100%;
+			padding: 10px;
+			margin-bottom: 20px;
+			box-sizing: border-box;
+			/* För att inkludera padding i bredden */
+		}
+
+		button {
+			width: 100%;
+			padding: 10px;
+			font-size: 16px;
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			cursor: pointer;
+		}
+
+		button:hover {
+			background-color: #45a049;
+		}
+	</style>
+	<title> Christmas Memory Game</title>
+</head>
+
+<body>
+
+	<h1>Christmas Memory Game</h1>
+
+	<div class="form-container">
+		<h2>Spela mot andra</h2>
+		<form id="game-form">
+			<label for="player1">Spelare 1:</label>
+			<input type="text" id="player1" name="player1" placeholder="Skriv namn på spelare 1" required>
+			<br>
+
+			<label for="player2">Spelare 2:</label>
+			<input type="text" id="player2" name="player2" placeholder="Skriv namn på spelare 2" required>
+			<br>
+
+			<button type="button" onclick="startGame()">Starta spelet</button>
+		</form>
+	</div>
+
+	<div id="game-board"></div>
+
+	<script>
+
+		function startGame() {
+				const player1Name = document.getElementById('player1').value || 'Spelare 1';
+				const player2Name = document.getElementById('player2').value || 'Spelare 2';
+
+				// Skapa en URL med parametrar för spelarnas namn
+				const url = 'secondpage.html' + '?player1=' + encodeURIComponent(player1Name) + '&player2=' + encodeURIComponent(player2Name);
+
+				// Gå till den andra sidan
+				window.location.href = url;
+			}
+
+
+	</script>
+</body>
+
+</html>
