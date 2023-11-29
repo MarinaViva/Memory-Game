@@ -37,7 +37,7 @@
 			height: 90vh;
 			width: 80vh;
 			align-content: space-around;
-			background-color: #dddbdbb3 ;
+			background-color:#dddbdb; ;
 			justify-content: center;
 			align-items: center;
 			border-radius: 10px;
@@ -65,6 +65,7 @@
 			left: 0;
 			backface-visibility: hidden;
 			transform-origin: center;
+			transition: transform 0.5s;
 		}
 
 		.card .back {
@@ -104,6 +105,31 @@
 			border-radius: 5px;
 		}
 
+		.card.matched {
+    		visibility: hidden; /* or any other style to hide the matched cards */
+}
+
+
+		#congratulations-message {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 70%;
+			max-width: 400px;
+			padding: 20px;
+			background-color: rgba(0, 0, 0, 0.8);
+			font-size: 32px;
+			color: #45a049;
+			text-align: center;
+			z-index: 9999;
+		}
+
+
+		#congratulations-message.hidden {
+			display: flex;
+		}
+
 
 	</style>
 
@@ -115,24 +141,24 @@
 	<div id="game-container">
 		<div id="game-board"></div>
 
-		<div id="score-container">
+		<aside id="score-container">
 			<form id="score-form">
 				<label for="player1-score">Poäng för <span id="player1Name"></span>:</label>
 				<input type="text" id="player1-score" name="player1-score" readonly>
 				<div style="margin-bottom: 20px;"></div>
 				<label for="player2-score">Poäng för <span id="player2Name"></span>:</label>
 				<input type="text" id="player2-score" name="player2-score" readonly>
+				<button type="button" onclick="exitGame()">Avsluta matchen</button>
 
-
-				<button type="button" onclick="endGame()">Avsluta matchen</button>
 			</form>
-		</div>
+		</aside>
 	</div>
 
+	<div id="winner-message"></div>
+
+
+
 	<script>
-
-
-
 		const gameBoard = document.getElementById('game-board');
 		const images = [
 			'https://images.unsplash.com/photo-1480632563560-30f503c09195?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Länk till bild 1
@@ -151,6 +177,9 @@
 		];
 
 		let selectedCards = [];
+		let player1Score = 0;
+		let player2Score = 0;
+
 
 		// Funktion för att blanda bilder slumpmässigt
 		function shuffleImages(images) {
@@ -173,19 +202,13 @@
 
 		}
 
-		// Skapar en ny array som innehåller två kopior av varje bild, och sedan blandas den arrayen.
-		function shuffleArray(array) {
-			for (let i = array.length - 1; i > 0; i--) {
-				const j = Math.floor(Math.random() * (i + 1));
-				[array[i], array[j]] = [array[j], array[i]];
-			}
-			return array;
-		}
+		initializeGame();
+
 
 		//  Skapar ett HTML-div-element som representerar spelkortet.
 		function createCardElement(index, imageUrl) {
 			const cardElement = document.createElement('div');
-			cardElement.classList.add('card');
+			cardElement.classList.add('card', index % 2 === 0 ? 'player1' : 'player2');
 
 			const frontImage = createImageElement('https://images.pexels.com/photos/1556679/pexels-photo-1556679.jpeg?auto=compress&cs=tinysrgb&w=1600', `Back Image ${index + 1}`, 'front');
 			const backImage = createImageElement(imageUrl, `Front Image ${index + 1}`, 'back');
@@ -211,6 +234,7 @@
 
 	// Klickhändelsesfunktion för varje kort
 		function handleCardClick(event) {
+		console.log(event.currentTarget)
 			const clickedCard = event.currentTarget;
 
 			if (clickedCard.classList.contains('flipped') || selectedCards.length === 2) return;
@@ -218,7 +242,6 @@
 			clickedCard.classList.add('flipped');
 
 	// Uppdaterad del för att vända på kortet och ändra bildens källa
-		// Uppdaterad del för att vända på kortet och ändra bildens källa
 		const [frontImage, backImage] = clickedCard.querySelectorAll('img');
 		frontImage.style.transform = 'rotateY(180deg)';
 		backImage.style.transform = 'rotateY(0deg)';
@@ -227,51 +250,121 @@
 
 		if (selectedCards.length === 2) {
 			setTimeout(() => {
+				console.log(selectedCards[0], selectedCards[1])
 				// Återvänd till baksidan efter en viss tidsfördröjning
 				frontImage.style.transform = 'rotateY(0deg)';
 				backImage.style.transform = 'rotateY(180deg)';
+				// selectedCards[0].style.transform = 'rotateY(0deg)';
+				// selectedCards[0].style.transform = 'rotateY(180deg)';
+				// selectedCards[1].style.transform = 'rotateY(0deg)';
+				// selectedCards[1].style.transform = 'rotateY(180deg)';
 				checkForMatch();
 			}, 1000);
 		}
 	}
 
 
-		// Funktion för att kontrollera om korten matchar
-		function checkForMatch() {
-			const [card1, card2] = selectedCards;
-			const img1 = card1.querySelector('.back').src;
-			const img2 = card2.querySelector('.back').src;
+	/*// Funktion för att kontrollera om korten matchar
+	function checkForMatch() {
+		const [card1, card2] = selectedCards;
+		const img1 = card1.querySelector('.back').src;
+		const img2 = card2.querySelector('.back').src;
 
-			if (img1 === img2) {
-				// Om bilderna matchar
-				console.log('Match!');
+		if (img1 === img2) {
+	// Om bilderna matchar
+			console.log('Match!');
+			removeMatchedCards(card1, card2); // Anropa funktionen för att ta bort matchade kort
+			increasePlayerScore(); // Anropa funktionen för att öka spelarens poäng
+		} else {
+	// Om bilderna inte matchar
+			setTimeout(() => {
+				card1.classList.remove('flipped');
+				card2.classList.remove('flipped');
+			}, 500); // Vänta en stund innan korten vänds tillbaka
 
-				// Här kan du lägga till din logik för att öka spelarens poäng eller liknande
-			} else {
-				// Om bilderna inte matchar
-				setTimeout(() => {
-					card1.classList.remove('flipped');
-					card2.classList.remove('flipped');
-				}, 500); // Vänta en stund innan korten vänds tillbaka
-
-				console.log('No match!');
-			}
-
-			selectedCards = []; // Återställ valda kort
+			console.log('No match!');
 		}
 
+		selectedCards = []; // Återställ valda kort
+	}
+*/
+	// Funktion för att kontrollera om korten matchar
+	function checkForMatch() {
+		const [card1, card2] = selectedCards;
+		const img1 = card1.querySelector('.back').src;
+		const img2 = card2.querySelector('.back').src;
+
+		if (img1 === img2) {
+			// Om bilderna matchar
+			console.log('Match!');
+			removeMatchedCards(card1, card2); // Anropa funktionen för att ta bort matchade kort
+			increasePlayerScore(); // Anropa funktionen för att öka spelarens poäng
+		} else {
+			// Om bilderna inte matchar
+			setTimeout(() => {
+				// Återställ rotationen på bilderna
+				const [frontImage1, backImage1] = card1.querySelectorAll('img');
+				const [frontImage2, backImage2] = card2.querySelectorAll('img');
+				frontImage1.style.transform = 'rotateY(0deg)';
+				backImage1.style.transform = 'rotateY(180deg)';
+				frontImage2.style.transform = 'rotateY(0deg)';
+				backImage2.style.transform = 'rotateY(180deg)';
+
+				// Ta bort klassen 'flipped'
+				card1.classList.remove('flipped');
+				card2.classList.remove('flipped');
+			}, 1000); // Vänta längre innan korten vänds tillbaka
+
+			console.log('No match!');
+		}
+
+		selectedCards = []; // Återställ valda kort
+	}
+
+	function removeMatchedCards(card1, card2) {
+		// Mark the cards as matched by adding a class
+		card1.classList.add('matched');
+		card2.classList.add('matched');
+
+		// Check if the game is over (all cards are matched)
+		if (document.querySelectorAll('.card:not(.matched)').length === 0) {
+			endGame();
+		}
+	}
 
 
-	initializeGame();
+// Jämföra spelarnas poäng och visa ett meddelande om användaren vinner
+
+	function increasePlayerScore() {
+		const player1ScoreElement = document.getElementById('player1-score');
+		const player2ScoreElement = document.getElementById('player2-score');
+		const winnerMessageElement = document.getElementById('winner-message');
+
+		if (selectedCards[0].classList.contains('player1')) {
+			player1Score++;
+			player1ScoreElement.value = player1Score;
+		} else if (selectedCards[0].classList.contains('player2')) {
+			player2Score++;
+			player2ScoreElement.value = player2Score;
+		}
+
+		if (player1Score > player2Score) {
+			winnerMessageElement.textContent = `Grattis! Spelare 1 leder med ${player1Score} poäng.`;
+		} else if (player2Score > player1Score) {
+			winnerMessageElement.textContent = `Grattis! Spelare 2 leder med ${player2Score} poäng.`;
+		} else {
+			winnerMessageElement.textContent = 'Det är oavgjort!';
+		}
+	}
 
 
-		// Funktion för att hämta parametrar från URL:en
+	// Funktion för att hämta parametrar från URL:en
 		function getURLParameter(name) {
 			const urlParams = new URLSearchParams(window.location.search);
 			return urlParams.get(name);
 		}
 
-		// Funktion för att hämta spelarnas namn från URL:en och uppdatera elementen på sidan
+	// Funktion för att hämta spelarnas namn från URL:en och uppdatera elementen på sidan
 		function updatePlayerNames() {
 			const player1NameElement = document.getElementById('player1Name');
 			const player2NameElement = document.getElementById('player2Name');
@@ -283,20 +376,43 @@
 			player2NameElement.textContent = player2Name;
 		}
 
-		// Anropa funktionen för att uppdatera spelarnas namn när sidan laddas
+	// Anropa funktionen för att uppdatera spelarnas namn när sidan laddas
 		updatePlayerNames();
 
 
-		// Funktion för att återställa poängen
+	// Funktion för att återställa poängen
 		function resetScores() {
 			document.getElementById('player1-score').value = '';
 			document.getElementById('player2-score').value = '';
 		}
 
 		// Funktion för att avsluta spelet
+
 		function endGame() {
-			// Implementera logik för att avsluta spelet här
+			const congratulationsMessageElement = document.getElementById('congratulations-message');
+			const player1Score = parseInt(document.getElementById('player1-score').value) || 0;
+			const player2Score = parseInt(document.getElementById('player2-score').value) || 0;
+			const player1Name = getURLParameter('player1') || 'Spelare 1';
+			const player2Name = getURLParameter('player2') || 'Spelare 2';
+
+			if (player1Score > player2Score) {
+				congratulationsMessageElement.textContent = `Grattis! ${player1Name} vann!`;
+			} else if (player2Score > player1Score) {
+				congratulationsMessageElement.textContent = `Grattis! ${player2Name} vann!`;
+			} else {
+				congratulationsMessageElement.textContent = 'Det är oavgjort!';
+			}
+
+			// Dölj spelbrädet och poängen
+			gameBoard.style.display = 'none';
+			document.getElementById('score-container').style.display = 'none';
+			congratulationsMessageElement.style.display = 'flex';
 		}
+
+		function exitGame() {
+			window.location.href = 'firstpage.html';
+		}
+
 
 </script>
 </body>
