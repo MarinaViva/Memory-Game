@@ -35,16 +35,18 @@
 			display: grid;
 			grid-template-columns: repeat(4, 1fr);
 			height: 90vh;
-			width: 80vh;
+			width: 80vw; /* <-- */
 			align-content: space-around;
 			background-color:#dddbdb; ;
 			justify-content: center;
 			align-items: center;
 			border-radius: 10px;
+			 gap: .5em; /* <-- */
+			 padding: .5em; /* <-- */
 		}
 
 		.card {
-			width: 150px;
+			/* width: 150px; */ /* <-- */
 			height: 100px;
 			display: inline-block;
 			overflow: hidden;
@@ -53,13 +55,13 @@
 			transform-style: preserve-3d;
 			transition: transform 0.5s;
 			transform-origin: center right;
-			margin-left: 18px;
+			/* margin-left: 18px; */ /* <-- */
 		}
 
 		.card .front,
 		.card .back {
 			width: 100%;
-			height: 100%;
+			/* height: 100%; */
 			position: absolute;
 			top: 0;
 			left: 0;
@@ -252,8 +254,10 @@
 			setTimeout(() => {
 				console.log(selectedCards[0], selectedCards[1])
 				// Återvänd till baksidan efter en viss tidsfördröjning
+
 				frontImage.style.transform = 'rotateY(0deg)';
 				backImage.style.transform = 'rotateY(180deg)';
+
 				// selectedCards[0].style.transform = 'rotateY(0deg)';
 				// selectedCards[0].style.transform = 'rotateY(180deg)';
 				// selectedCards[1].style.transform = 'rotateY(0deg)';
