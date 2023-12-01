@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="second-page-styles.css">
+	<script src="second-page.js" defer></script>
+
+	<title>Julminnesspel</title>
+</head>
+
+<body>
+
+	<div id="game-container">
+		<div id="game-board"></div>
+		<aside id="score-container">
+			<form id="score-form">
+				<div id="current-player-turn">Det är [Spelarens namn] tur att välja kort.</div>
+				<div style="margin-bottom: 20px;"></div>
+				<label for="player1-score">Poäng för <span id="player1Name"></span>:</label>
+				<input type="text" id="player1-score" name="player1-score" readonly>
+				<div style="margin-bottom: 20px;"></div>
+				<label for="player2-score">Poäng för <span id="player2Name"></span>:</label>
+				<input type="text" id="player2-score" name="player2-score" readonly>
+				<button type="button" onclick="exitGame()">Avsluta matchen</button>
+
+			</form>
+		</aside>
+
+	</div>
+
+
+
+
+</body>
+
+</html>
